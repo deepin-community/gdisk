@@ -1,0 +1,29 @@
+Description: fix uuid generation
+ Due to an update to libuuid, gdisk fails to find the library and is using
+ fallback UUID generation which may have incompatibility issues:
+ .
+ Warning! Unable to generate a proper UUID! Creating an improper one as a last
+ resort! Windows 7 may crash if you save this partition table!
+ .
+ This has been fixed upstream in commit 6a8416cbd12d55f882bb751993b94f72d338d96f
+ the patch applies cleanly against 1.0.9 guid.cc.
+ .
+ gdisk (1.0.9-2) unstable; urgency=medium
+
+---
+
+Origin: upstream, https://sourceforge.net/p/gptfdisk/code/ci/6a8416cbd12d55f882bb751993b94f72d338d96f/
+Bug-Debian: https://bugs.debian.org/1011006
+Last-Update: 2022-06-02
+
+--- gdisk-1.0.9.orig/guid.cc
++++ gdisk-1.0.9/guid.cc
+@@ -141,7 +141,7 @@ void GUIDData::Zero(void) {
+ void GUIDData::Randomize(void) {
+    int i, uuidGenerated = 0;
+ 
+-#ifdef _UUID_UUID_H
++#if defined (_UUID_UUID_H) || defined (_UL_LIBUUID_UUID_H)
+    uuid_generate(uuidData);
+    ReverseBytes(&uuidData[0], 4);
+    ReverseBytes(&uuidData[4], 2);
